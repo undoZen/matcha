@@ -1,0 +1,11 @@
+{
+    "name": "sfdevt"
+  , "version": "0.0.1"
+  , "private": true
+  , "dependencies": {
+      "connect": "1.8.1"
+    , "Deferred": ">= 0.0.1"
+    , "less": ">= 0.0.1"
+    , "jade": ">= 0.0.1"
+  }
+}
