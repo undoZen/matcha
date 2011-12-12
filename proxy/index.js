@@ -112,8 +112,9 @@ var toHttp = proxy.toHttp = function (req, res, next, options) {
   });
   req.pBody.then(function (buffers) {
     buffers.forEach(function(buffer) {
-      proxyReq.write(buffers);
+      proxyReq.write(buffer);
     });
     proxyReq.end();
   });
 };
+
