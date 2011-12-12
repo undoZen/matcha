@@ -17,7 +17,7 @@ app.listen(8123);
 describe('connect.bodyParser()', function(){
   it('should default to {}', function(done){
     request('http://localhost:8123/', function(err, res, body){
-      assert(body === '{}');
+      body.should.equal('{}');
       done();
     });
   })
@@ -30,7 +30,7 @@ describe('connect.bodyParser()', function(){
       , body: '{"user":"tobi"}'
     },
     function(err, res, body){
-      assert(body === '{"user":"tobi"}');
+      body.should.equal('{"user":"tobi"}');
       done();
     });
   })
@@ -43,7 +43,7 @@ describe('connect.bodyParser()', function(){
       , body: 'user=tobi'
     }
     , function(err, res, body){
-      assert(body === '{"user":"tobi"}');
+      body.should.equal('{"user":"tobi"}');
       done();
     });
   })
