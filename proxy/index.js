@@ -118,3 +118,4 @@ var toHttp = proxy.toHttp = function (req, res, next, options) {
   });
 };
 
+proxy.bodyParser = require('./bodyParser');
