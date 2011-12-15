@@ -101,53 +101,13 @@ exports.parse = {};
   exports.parse[mime] = function(req, options, fn){
     var str = '';
     try {
-      req.pBody.then(function(buffers){
-        buffers.forEach(function(buf){
-          str += buf.toString('utf-8');
-        });
-        req.body = (/json$/.test(mime) ? JSON : qs).parse(str);
-        fn();
-      }, function(err){
-        fn(err);
+      req.bodyBufs.forEach(function(buf){
+        str += buf.toString('utf-8');
       });
+      req.body = (/json$/.test(mime) ? JSON : qs).parse(str);
+      fn();
     } catch (err) {
       fn(err);
     }
   };
 });
-
-/**
- * Parse application/x-www-form-urlencoded.
- */
-
-exports.parse['application/x-www-form-urlencoded'] = function(req, options, fn){
-  var buf = '';
-  req.setEncoding('utf8');
-  req.on('data', function(chunk){ buf += chunk });
-  req.on('end', function(){
-    try {
-      req.body = qs.parse(buf);
-      fn();
-    } catch (err){
-      fn(err);
-    }
-  });
-};
-
-/**
- * Parse application/json.
- */
-
-exports.parse['application/json'] = function(req, options, fn){
-  var buf = '';
-  req.setEncoding('utf8');
-  req.on('data', function(chunk){ buf += chunk });
-  req.on('end', function(){
-    try {
-      req.body = JSON.parse(buf);
-      fn();
-    } catch (err){
-      fn(err);
-    }
-  });
-};

@@ -1,6 +1,5 @@
 var http = require('http')
   , connect = require('connect')
-  , Deferred = require('Deferred')
 
 try {
   var zlib = require('zlib');
@@ -56,18 +55,13 @@ proxy.prepare = function (req, res, next) {
     delete req.proxy.headers['proxy-connection'];
   }
 
-  req.pBody = (function () {
-    var d = new Deferred(), buffers = [];
-    req.on('data', function (buffer) {
-      buffers.push(buffer);
-    });
-    req.on('end',  function () {
-      d.resolve(buffers);
-    });
-    return d.promise();
-  }());
-
-  next();
+  req.bodyBufs = [];
+  req.on('data', function (buf) {
+    req.bodyBufs.push(buf);
+  });
+  req.on('end',  function () {
+    next();
+  });
 }
 
 var toHttp = proxy.toHttp = function (req, res, next, options) {
@@ -110,12 +104,10 @@ var toHttp = proxy.toHttp = function (req, res, next, options) {
     console.error(err);
     next(err);
   });
-  req.pBody.then(function (buffers) {
-    buffers.forEach(function(buffer) {
-      proxyReq.write(buffer);
-    });
-    proxyReq.end();
+  req.bodyBufs.forEach(function(buffer) {
+    proxyReq.write(buffer);
   });
+  proxyReq.end();
 };
 
 proxy.bodyParser = require('./bodyParser');
