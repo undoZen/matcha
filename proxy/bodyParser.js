@@ -101,7 +101,7 @@ exports.parse = {};
   exports.parse[mime] = function(req, options, fn){
     var str = '';
     try {
-      req.bodyBufs.forEach(function(buf){
+      req.bodyBuffers.forEach(function(buf){
         str += buf.toString('utf-8');
       });
       req.body = (/json$/.test(mime) ? JSON : qs).parse(str);
