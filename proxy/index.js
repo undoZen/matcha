@@ -3,6 +3,7 @@ var http = require('http')
   , Stream = require('stream').Stream
   , zlib = require('zlib')
   , util = require('util')
+  , u = require('../u')
   ;
 
 function _extend(orig) {
@@ -99,7 +100,7 @@ function TamperStream (tamper) {
   }
 }
 util.inherits(TamperStream, Stream);
-_extend(TamperStream.prototype, {
+u.extend(TamperStream.prototype, {
     write: function (b) { this.emit('data', b); }
   , end: function () { this.emit('end'); }
   , error: function (b) { this.emit('error', b); }
@@ -109,11 +110,13 @@ _extend(TamperStream.prototype, {
 proxy.http = function (options) {
   return function (req, res, next) {
     var tamperStream = new TamperStream(options && options.tamper)
-      , _options = _extend({}, req.proxy);
+      , _options = u.extend({}, req.proxy);
     'host port path method headers'.split(' ').forEach(function (p) {
       if (options && options[p]) {
         _options[p] = 'function' === typeof options[p]
-                    ? options[p](_options[p])
+                    ? options[p](_options[p] || 'headers' === p
+                                              ? _options[p] = {}
+                                              : void 0)
                     : options[p];
       };
     });
@@ -135,7 +138,22 @@ proxy.http = function (options) {
               }
               console.log('     '+proxyRes.statusCode+' '+pathInfo);
               res.writeHead(proxyRes.statusCode, proxyRes.headers);
-              proxyRes.pipe(tamperStream).pipe(res);
+              var ecd = proxyRes.headers['content-encoding'];
+              if (ecd && 'gzip' === ecd) {
+                proxyRes
+                  .pipe(zlib.createGunzip())
+                  .pipe(tamperStream)
+                  .pipe(zlib.createGzip())
+                  .pipe(res);
+              } else if (ecd && 'deflate' === ecd) {
+                proxyRes
+                  .pipe(zlib.createInflate())
+                  .pipe(tamperStream)
+                  .pipe(zlib.createDeflate())
+                  .pipe(res);
+              } else {
+                proxyRes.pipe(tamperStream).pipe(res);
+              }
             }
         );
     proxyReq.on('error', function (err) {

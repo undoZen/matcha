@@ -3,6 +3,7 @@ var connect = require('connect')
   , proxy = require('../proxy')
   , sa = require('superagent')
   , request = require('request')
+  , zlib = require('zlib')
 
 function response (path, status, body) {
   this.all(path, function (req, res, next) {
@@ -15,7 +16,17 @@ connect(connect.router(function (app) {
   app.r('/200', 200, '8001');
   app.r('/404', 404, '8001 404');
   app.r('/500', 500, '8001 500');
-  app.r('/tamper', 200, 'origin');
+  app.all('/tamper', function (req, res, next) {
+    if (req.headers['accept-encoding'] && ~req.headers['accept-encoding'].indexOf('gzip')) {
+      res.writeHead(200, {'Vary': 'Accept-Encoding', 'Content-Encoding': 'gzip'});
+      zlib.gzip(new Buffer('origin'), function(err, result) {
+        res.end(result);
+      });
+    } else {
+      res.writeHead(200);
+      res.end('origin');
+    }
+  });
 })).listen(8001);
 
 connect(function (req, res, next) {
@@ -65,6 +76,24 @@ describe('proxy', function () {
       request('http://127.0.0.1:8088/tamper', function (err, res, body) {
         body.should.equal('tampered');
         done();
+      });
+    });
+    it('tamper response body with gzip', function (done) {
+      request({
+          uri: 'http://127.0.0.1:8088/tamper'
+        , headers: { 'Accept-Encoding': 'gzip' }
+        , onResponse: function (err, res) {
+            var gunzip = zlib.createGunzip()
+              , body = '';
+            res.pipe(gunzip);
+            gunzip.on('data', function(chunk) {
+              body += chunk.toString('utf8');
+            });
+            gunzip.on('end', function() {
+              body.should.equal('tampered');
+              done();
+            });
+          }
       });
     });
     after(function () {
