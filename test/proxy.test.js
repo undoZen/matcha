@@ -38,8 +38,8 @@ describe('proxy', function () {
   describe('reverse proxy', function (done) {
     var proxyApp = connect(proxy.prepare());
     before(function () {
-      proxyApp.use(proxy.http({ host: '127.0.0.1', port: 8001 }));
-      proxyApp.use(proxy.http({ host: '127.0.0.1', port: 8002 }));
+      proxyApp.use(proxy.http({ host: '127.0.0.1', port: 8001, log: false }));
+      proxyApp.use(proxy.http({ host: '127.0.0.1', port: 8002, log: false }));
       proxyApp.listen(8088);
     });
     it('proxy 200', function (done) {
@@ -67,7 +67,7 @@ describe('proxy', function () {
   describe('tamper response body', function () {
     var proxyApp = connect(proxy.prepare());
     before(function () {
-      proxyApp.use(proxy.http({ host: '127.0.0.1', port: 8001, tamper: function (body) {
+      proxyApp.use(proxy.http({ host: '127.0.0.1', port: 8001, log: false, tamper: function (body) {
         return body.replace('origin', 'tampered');
       }}));
       proxyApp.listen(8088);

@@ -124,7 +124,7 @@ proxy.http = function (options) {
     _options.headers.host = _options.host+':'+_options.port;
     var pathInfo = _options.path+' ('+_options.host+':'+_options.port+')';
 
-    console.log('proxy to '+pathInfo);
+    options.log !== false && console.log('proxy to '+pathInfo);
     var proxyReq = http.request(
             _options
           , function (proxyRes) {
@@ -133,10 +133,10 @@ proxy.http = function (options) {
                 next(err);
               });
               if (proxyRes.statusCode >= 400) {
-                console.log('     '+proxyRes.statusCode+' '+pathInfo);
+                options.log !== false && console.log('     '+proxyRes.statusCode+' '+pathInfo);
                 return next();
               }
-              console.log('     '+proxyRes.statusCode+' '+pathInfo);
+              options.log !== false && console.log('     '+proxyRes.statusCode+' '+pathInfo);
               res.writeHead(proxyRes.statusCode, proxyRes.headers);
               var ecd = proxyRes.headers['content-encoding'];
               if (ecd && 'gzip' === ecd) {
