@@ -12,6 +12,5 @@
     , "mocha": ">= 0.0.1"
     , "should": ">= 0.0.1"
     , "superagent": ">= 0.0.1"
-    , "coffee-script": ">= 0.0.1"
   }
 }

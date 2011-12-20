@@ -1,5 +1,5 @@
 default: test
-	#echo 'now you can only make test'
+	#is test all ok? :)
 
 test:
 	@./node_modules/.bin/mocha test/*.test.* --reporter spec -r should

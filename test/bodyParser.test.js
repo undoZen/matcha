@@ -4,7 +4,7 @@ var connect = require('connect')
   , assert = require('assert')
   ;
 
-var app = connect( proxy.prepare
+var app = connect( proxy.prepare()
                  , proxy.bodyParser()
                  );
 
@@ -14,7 +14,7 @@ app.use(function(req, res){
 
 app.listen(8123);
 
-describe('connect.bodyParser()', function(){
+describe('proxy.bodyParser()', function(){
   it('should default to {}', function(done){
     request('http://localhost:8123/', function(err, res, body){
       body.should.equal('{}');
