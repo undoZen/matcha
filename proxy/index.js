@@ -26,19 +26,6 @@ var proxy = module.exports = {};
 * 冲突。
 */
 proxy.prepare = function () {
-  /*
-  req.prototype.bodyStream = function () {
-    var stream = new Stream
-      , buf
-      , i = -1;
-    if (!this.bodyBuffers) {
-      return;
-    }
-    for (;buf = this.bodyBuffers[++i];) {
-      stream.emit('data', buf);
-    }
-  };
-  */
   return function (req, res, next) {
     req.proxy = {};
     var match = /^http:\/\/([^\/]+)(.*)/.exec(req.originalUrl)
