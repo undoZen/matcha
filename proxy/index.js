@@ -110,11 +110,11 @@ u.extend(TamperStream.prototype, {
 });
 
 proxy.http = function (options) {
-  var showLog = options && false !== options.log;
+  var logOn = options && false !== options.log
+    , tamperOn = options && options.tamper
   return function (req, res, next) {
-    var tamperStream = new TamperStream(options && options.tamper)
+    var tamperStream = tamperOn && new TamperStream(options.tamper)
       , _options = u.extend({}, req.proxy)
-      ;
     'host port path method headers'.split(' ').forEach(function (p) {
       if (options && options[p]) {
         _options[p] = 'function' === typeof options[p]
@@ -141,7 +141,7 @@ proxy.http = function (options) {
     _options.headers.host = _options.host+':'+_options.port;
     var pathInfo = _options.path+' ('+_options.host+':'+_options.port+')';
 
-    showLog && console.log('proxy to '+pathInfo);
+    logOn && console.log('proxy to '+pathInfo);
     var proxyReq = http.request(
             _options
           , function (proxyRes) {
@@ -150,32 +150,40 @@ proxy.http = function (options) {
                 next(err);
               });
               if (proxyRes.statusCode >= 400) {
-                showLog && console.log('     '+proxyRes.statusCode+' '+pathInfo);
+                logOn && console.log('     '+proxyRes.statusCode+' '+pathInfo);
                 return next();
               }
-              showLog && console.log('     '+proxyRes.statusCode+' '+pathInfo);
+              logOn && console.log('     '+proxyRes.statusCode+' '+pathInfo);
               res.writeHead(proxyRes.statusCode, proxyRes.headers);
+
               var ecd = proxyRes.headers['content-encoding'];
-              if (ecd && 'gzip' === ecd) {
+              if (tamperOn && ecd && 'gzip' === ecd) {
                 proxyRes
                   .pipe(zlib.createGunzip())
                   .pipe(tamperStream)
                   .pipe(zlib.createGzip())
                   .pipe(res);
-              } else if (ecd && 'deflate' === ecd) {
+              } else if (tamperOn && ecd && 'deflate' === ecd) {
                 proxyRes
                   .pipe(zlib.createInflate())
                   .pipe(tamperStream)
                   .pipe(zlib.createDeflate())
                   .pipe(res);
-              } else {
+              } else if (tamperOn) {
                 proxyRes.pipe(tamperStream).pipe(res);
+              } else {
+                proxyRes.pipe(res);
               }
             }
         );
     proxyReq.on('error', function (err) {
-      console.error(err);
-      next(err);
+      if ('ECONNREFUSED' === err.errno) {
+        showLog && console.log('  econnr '+pathInfo)
+        next()
+      } else {
+        console.error(err);
+        next(err);
+      }
     });
     req.bodyBuffers.forEach(function(buffer) {
       proxyReq.write(buffer);
