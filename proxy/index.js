@@ -178,7 +178,7 @@ proxy.http = function (options) {
         );
     proxyReq.on('error', function (err) {
       if ('ECONNREFUSED' === err.errno) {
-        showLog && console.log('  econnr '+pathInfo)
+        logOn && console.log('  econnr '+pathInfo)
         next()
       } else {
         console.error(err);
