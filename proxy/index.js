@@ -41,7 +41,9 @@ proxy.prepare = function () {
   */
   return function (req, res, next) {
     req.proxy = {};
-    var match = /^http:\/\/([^\/]+)(.*)/.exec(req.originalUrl), host_port;
+    var match = /^http:\/\/([^\/]+)(.*)/.exec(req.originalUrl)
+      , host_port
+      ;
     if (match) {
       host_port = match[1].split(':');
       req.url = match[2] || '/';
@@ -52,7 +54,6 @@ proxy.prepare = function () {
         return;
       }
       host_port = req.headers.host.split(':');
-      req.proxy.isReverse = true;
     }
 
     req.proxy = {
@@ -61,6 +62,7 @@ proxy.prepare = function () {
       , path: req.url
       , method: req.method
       , headers: req.headers
+      , isReverse: !match
     };
     req.proxy.headers.host = req.proxy.host + (req.proxy.port == 80 ? '' : ':' + req.proxy.port);
     //TODO: 关于代理的 Proxy-Connection: keep-alive 细节，还需要研究
@@ -108,9 +110,11 @@ u.extend(TamperStream.prototype, {
 });
 
 proxy.http = function (options) {
+  var showLog = options && false !== options.log;
   return function (req, res, next) {
     var tamperStream = new TamperStream(options && options.tamper)
-      , _options = u.extend({}, req.proxy);
+      , _options = u.extend({}, req.proxy)
+      ;
     'host port path method headers'.split(' ').forEach(function (p) {
       if (options && options[p]) {
         _options[p] = 'function' === typeof options[p]
@@ -121,10 +125,23 @@ proxy.http = function (options) {
       };
     });
 
+    if (!_options.host) { // host 都没有，proxy 个毛啊
+      return next();
+    }
+
+    if (req.proxy.isReverse === true //prevent infinite loop
+        && _options.host === req.proxy.host
+        && _options.port === req.proxy.port
+        && _options.path === req.proxy.path
+        && _options.method === req.proxy.method
+    ) {
+      return next();
+    }
+
     _options.headers.host = _options.host+':'+_options.port;
     var pathInfo = _options.path+' ('+_options.host+':'+_options.port+')';
 
-    options.log !== false && console.log('proxy to '+pathInfo);
+    showLog && console.log('proxy to '+pathInfo);
     var proxyReq = http.request(
             _options
           , function (proxyRes) {
@@ -133,10 +150,10 @@ proxy.http = function (options) {
                 next(err);
               });
               if (proxyRes.statusCode >= 400) {
-                options.log !== false && console.log('     '+proxyRes.statusCode+' '+pathInfo);
+                showLog && console.log('     '+proxyRes.statusCode+' '+pathInfo);
                 return next();
               }
-              options.log !== false && console.log('     '+proxyRes.statusCode+' '+pathInfo);
+              showLog && console.log('     '+proxyRes.statusCode+' '+pathInfo);
               res.writeHead(proxyRes.statusCode, proxyRes.headers);
               var ecd = proxyRes.headers['content-encoding'];
               if (ecd && 'gzip' === ecd) {
