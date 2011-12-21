@@ -49,6 +49,17 @@ app.listen(8088);
 
 io.sockets.on('connection', function (socket) {
   console.log('connection');
+  socket.on('ua', function(ua) {
+    console.log(ua)
+  })
+  'start,suite,suite end,test,pending,pass,fail,end'
+    .split(',')
+    .forEach(function(ev) {
+      console.log(ev);
+      socket.on(ev, function(title) {
+        console.log(title);
+      })
+    })
 })
 
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
