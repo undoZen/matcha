@@ -5,6 +5,7 @@
   , "dependencies": {
       "qs": "latest"
     , "mime": "latest"
+    , "mkdirp": "0.0.7"
     , "connect": "<2.0.0"
     , "express": "<3.0.0"
     , "jade": "latest"
