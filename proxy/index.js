@@ -107,7 +107,8 @@ proxy.http = function (options) {
         _options[p] = 'function' === typeof options[p]
                     ? options[p](_options[p] || 'headers' === p
                                               ? _options[p] = {}
-                                              : void 0)
+                                              : void 0
+                                , req)
                     : options[p];
       };
     });
