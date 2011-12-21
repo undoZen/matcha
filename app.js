@@ -26,6 +26,10 @@ app.configure(function(){
      .use(app.set('sfprefix'), express['static'](__dirname + '/public'))
      .use(proxy.http({ host: proxyHost('127.0.0.1'), port: 7878 }))
      .use(proxy.http({ host: proxyHost('xueqiu.com'), port: 80 }))
+
+  app.helpers({
+      _p: app.set('sfprefix')
+  })
 });
 
 app.configure('development', function(){
