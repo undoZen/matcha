@@ -9,6 +9,7 @@ var mc = exports = module.exports = {
   , lib: __dirname + '/public/matcha'
   , ajax: __dirname + '/mcajax'
   , test: __dirname + '/mctest'
+  , host: '127.0.0.1'
   , port: 8088
 }
 
