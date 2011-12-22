@@ -5,30 +5,36 @@ var express = require('express')
 
 var app = module.exports = express.createServer();
 
+var mc
+try {
+  mc = require('./mcconfig.js')
+} catch (e) {
+  mc = { prefix: '/__mc'
+       , lib: __dirname + '/public/matcha'
+       , ajax: __dirname + '/mcajax'
+       , test: __dirname + '/mctest' }
+}
+
 // Configuration
 
 app.configure(function(){
-  app.set('views', __dirname + '/views')
-     .set('view engine', 'jade')
-     .set('sfprefix', '/__sf')
+  app
+    .set('views', __dirname + '/views')
+    .set('view engine', 'jade')
+    .set('mcprefix', mc.prefix)
 
-  function proxyHost(host) {
-    return function (_, req) {
-      return !req.url.indexOf(app.set('sfprefix')) ? false : host
-    }
-  }
-
-  app.use(proxy.prepare())
-     .use(proxy.bodyParser())
-     .use(express.methodOverride())
-     .use(app.set('sfprefix'), require('stylus').middleware({ src: __dirname + '/public' }))
-     .use(app.set('sfprefix'), app.router)
-     .use(app.set('sfprefix'), express['static'](__dirname + '/public'))
-     .use(proxy.http({ host: proxyHost('127.0.0.1'), port: 7878 }))
-     .use(proxy.http({ host: proxyHost('xueqiu.com'), port: 80 }))
+  app
+    .use(proxy.prepare())
+    .use(proxy.bodyParser())
+    .use(express.methodOverride())
+    .use(mc.prefix, require('stylus').middleware({ src: __dirname + '/public' }))
+    .use(mc.prefix, app.router)
+    .use(mc.prefix, express['static'](__dirname + '/public'))
+    .use(mc.prefix + '/lib', express['static'](mc.lib))
+    .use(mc.proxy || proxy.http())
 
   app.helpers({
-      _p: app.set('sfprefix')
+      _p: mc.prefix
   })
 });
 
