@@ -1,6 +1,6 @@
 var express = require('express')
   , routes = require('./routes')
-  , proxy = require('./proxy')
+  , proxy = require('./lib/proxy')
   , io = require('socket.io')
 
 var app = module.exports = express.createServer();

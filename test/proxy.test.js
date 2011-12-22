@@ -1,6 +1,6 @@
 var connect = require('connect')
   , assert = require('assert')
-  , proxy = require('../proxy')
+  , proxy = require('../lib/proxy')
   , request = require('request')
   , zlib = require('zlib')
   ;
@@ -50,27 +50,27 @@ describe('proxy', function () {
 
   describe('proxy', function (done) {
     var proxyApp = connect(proxy.prepare())
-      , proxyRequest = request.defaults({ proxy: 'http://127.0.0.1:8088' });
+      , proxyRequest = request.defaults({ proxy: 'http://127.0.0.1:8099' });
     before(function () {
       proxyApp.use(proxy.http({ host: '127.0.0.1', port: 8001, log: false }));
       proxyApp.use(proxy.http({ host: '127.0.0.1', port: 8002, log: false }));
       proxyApp.use(proxy.http());
-      proxyApp.listen(8088);
+      proxyApp.listen(8099);
     });
     it('proxy 200', function (done) {
-      proxyRequest('http://127.0.0.1:8088/200', function (err, res, body) {
+      proxyRequest('http://127.0.0.1:8099/200', function (err, res, body) {
         body.should.equal('8001');
         done();
       });
     });
     it('proxy to next server when 404', function (done) {
-      proxyRequest('http://127.0.0.1:8088/404', function (err, res, body) {
+      proxyRequest('http://127.0.0.1:8099/404', function (err, res, body) {
         body.should.equal('8002');
         done();
       });
     });
     it('proxy to next server when 500', function (done) {
-      proxyRequest('http://127.0.0.1:8088/500', function (err, res, body) {
+      proxyRequest('http://127.0.0.1:8099/500', function (err, res, body) {
         body.should.equal('8002');
         done();
       });
@@ -91,28 +91,29 @@ describe('proxy', function () {
     before(function () {
       proxyApp.use(proxy.http({ host: '127.0.0.1', port: 8001, log: false }));
       proxyApp.use(proxy.http({ host: '127.0.0.1', port: 8002, log: false }));
-      proxyApp.listen(8088);
+      proxyApp.use(proxy.http());
+      proxyApp.listen(8099);
     });
     it('proxy 200', function (done) {
-      request('http://127.0.0.1:8088/200', function (err, res, body) {
+      request('http://127.0.0.1:8099/200', function (err, res, body) {
         body.should.equal('8001');
         done();
       });
     });
     it('proxy to next server when 404', function (done) {
-      request('http://127.0.0.1:8088/404', function (err, res, body) {
+      request('http://127.0.0.1:8099/404', function (err, res, body) {
         body.should.equal('8002');
         done();
       });
     });
     it('proxy to next server when 500', function (done) {
-      request('http://127.0.0.1:8088/500', function (err, res, body) {
+      request('http://127.0.0.1:8099/500', function (err, res, body) {
         body.should.equal('8002');
         done();
       });
     });
     it('not found finally', function (done) {
-      request('http://127.0.0.1:8088/proxy', function (err, res, body) {
+      request('http://127.0.0.1:8099/proxy', function (err, res, body) {
         body.should.equal('Cannot GET /proxy');
         done();
       });
@@ -128,17 +129,17 @@ describe('proxy', function () {
       proxyApp.use(proxy.http({ host: '127.0.0.1', port: 8001, log: false, tamper: function (body) {
         return body.replace('origin', 'tampered');
       }}));
-      proxyApp.listen(8088);
+      proxyApp.listen(8099);
     });
     it('tamper response body', function (done) {
-      request('http://127.0.0.1:8088/tamper', function (err, res, body) {
+      request('http://127.0.0.1:8099/tamper', function (err, res, body) {
         body.should.equal('tampered');
         done();
       });
     });
     it('tamper response body with gzip', function (done) {
       request({
-          uri: 'http://127.0.0.1:8088/tamper'
+          uri: 'http://127.0.0.1:8099/tamper'
         , headers: { 'Accept-Encoding': 'gzip' }
         , onResponse: function (err, res) {
             var gunzip = zlib.createGunzip()
