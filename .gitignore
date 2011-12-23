@@ -2,3 +2,4 @@
 *.swo
 node_modules
 mcconfig.js
+*.css

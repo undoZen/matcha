@@ -32,6 +32,7 @@ var proxyTamper = function(body, req) {
     , ajaxs
     , scripts = [ '<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>'
                 , '<script src="/socket.io/socket.io.js"></script>'
+                , '<script src="' + mc.prefix + '/lib/es5-safe.js"></script>'
                 , '<script src="' + mc.prefix + '/lib/mocha.js"></script>'
                 , '<script src="' + mc.prefix + '/lib/matcha.js"></script>'
                 , '<script> var socket = io.connect(\'http://\'+location.hostname); socket.emit(\'ua\', navigator.userAgent); </script>'
@@ -50,12 +51,9 @@ var proxyTamper = function(body, req) {
       scripts.push('<script src="' + mc.prefix + '/test/'+test+'"></script>');
     })
     //scripts.push('<script src="' + mc.prefix + '/lib/mocha_run.js"></script>')
-    console.log(scripts.join(''));
-    console.log(body);
     body = body.replace('</body>', '\n'+scripts.join('\n')+'\n</body>');
-    console.log(body);
   }
-  console.log(ajaxs)
+  //TODO with ajaxs
   return body;
 }
 
@@ -91,6 +89,7 @@ app.configure(function(){
     .use(mc.prefix, require('stylus').middleware({ src: __dirname + '/public' }))
     .use(mc.prefix, app.router)
     .use(mc.prefix, express['static'](__dirname + '/public'))
+    .use(mc.prefix + '/lib', require('stylus').middleware({ src: mc.lib }))
     .use(mc.prefix + '/lib', express['static'](mc.lib))
     .use(mc.prefix + '/test', express['static'](mc.test))
     .use(mc.proxy)
