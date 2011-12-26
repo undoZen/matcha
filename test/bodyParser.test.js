@@ -1,5 +1,5 @@
 var connect = require('connect')
-  , proxy = require('../proxy/')
+  , proxy = require('../lib/proxy/')
   , request = require('request')
   , assert = require('assert')
   ;
