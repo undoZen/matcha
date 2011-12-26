@@ -73,7 +73,6 @@ if (!(mc.proxy instanceof connect.HTTPServer)) {
       }
     , tamper: proxyTamper
     }))
-  mc.proxy.use(proxy.http())
 }
 
 app.configure(function(){

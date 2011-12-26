@@ -3,9 +3,6 @@ var connect = require('connect')
 
 var mc = exports = module.exports = {
     prefix: '/__mc'
-  , proxy: [ { host: '127.0.0.1', port: 7878 }
-           , { host: 'xueqiu.com', port: 80 }
-           ]
   , lib: __dirname + '/public/matcha'
   , ajax: __dirname + '/mcajax'
   , test: __dirname + '/mctest'
@@ -13,3 +10,16 @@ var mc = exports = module.exports = {
   , port: 8088
 }
 
+var env = process.env.NODE_ENV || 'development'
+
+if ('test' === env) {
+  mc.proxy = [ { host: '192.168.1.198', port: 80 } ]
+} else if ('local-test' === env) {
+  mc.proxy = [ { host: '127.0.0.1', port: 7878 }
+             , { host: '192.168.1.198', port: 80 }
+             ]
+} else {
+  mc.proxy = [ { host: '127.0.0.1', port: 7878 }
+             , {}
+             ]
+}
