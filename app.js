@@ -35,11 +35,17 @@ var proxyTamper = function(body, req) {
                 , '<script src="' + mc.prefix + '/lib/es5-safe.js"></script>'
                 , '<script src="' + mc.prefix + '/lib/mocha.js"></script>'
                 , '<script src="' + mc.prefix + '/lib/matcha.js"></script>'
-                , '<script> var socket = io.connect(\'http://\'+location.hostname); socket.emit(\'ua\', navigator.userAgent); </script>'
+                , '<script> var socket = "undefined" !== typeof io && io.connect(\'http://\'+location.hostname); </script>'
                 ]
+  function splitquery (q) {
+    return (q || '')
+      .split(',')
+      .map(function(p){return p.trim()})
+      .filter(function(p){return p!==''})
+  }
   if (reqUrl.query) {
-    tests = (reqUrl.query._mc_test || '').split(',').filter(function(p){return p!==''})
-    ajaxs = (reqUrl.query._mc_ajax || '').split(',').filter(function(p){return p!==''})
+    tests = splitquery(reqUrl.query._mc_test)
+    ajaxs = splitquery(reqUrl.query._mc_ajax)
   }
   if (tests.length) {
     body = body

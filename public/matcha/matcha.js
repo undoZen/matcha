@@ -19,9 +19,12 @@ function assert(expr, msg) {
           //console.log(ev);
           //console.log(test);
           //console.log(err);
-          test
+          /*
+          'object' === typeof socket && socket && socket.emit && test
             ? socket.emit(ev, title)
             : socket.emit(ev)
+            */
+          window.console && console.log && console.log(test)
         })
       })
   }
