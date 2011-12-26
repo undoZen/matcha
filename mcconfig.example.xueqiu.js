@@ -13,13 +13,27 @@ var mc = exports = module.exports = {
 var env = process.env.NODE_ENV || 'development'
 
 if ('test' === env) {
-  mc.proxy = [ { host: '192.168.1.198', port: 80 } ]
+  mc.proxy =  [ { host: '192.168.1.198', port: 80 } ]
+} else if ('local' === env) {
+  mc.proxy =  [ { host: '127.0.0.1', port: 7878 } ]
+} else if ('online' === env) {
+  mc.proxy =  [ {} ]
+} else if ('test-online' === env) {
+  mc.proxy =  [ { host: '192.168.1.198', port: 80 }
+              , {}
+              ]
 } else if ('local-test' === env) {
-  mc.proxy = [ { host: '127.0.0.1', port: 7878 }
-             , { host: '192.168.1.198', port: 80 }
-             ]
+  mc.proxy =  [ { host: '127.0.0.1', port: 7878 }
+              , { host: '192.168.1.198', port: 80 }
+              ]
+} else if ('local-test-online' === env) {
+  mc.proxy =  [ { host: '127.0.0.1', port: 7878 }
+              , { host: '192.168.1.198', port: 80 }
+              , {}
+              ]
 } else {
-  mc.proxy = [ { host: '127.0.0.1', port: 7878 }
-             , {}
-             ]
+  //defalt: local-online
+  mc.proxy =  [ { host: '127.0.0.1', port: 7878 }
+              , {}
+              ]
 }
