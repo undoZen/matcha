@@ -21,8 +21,8 @@ try {
 }
 
 var proxyHost = function(host) {
-  return function (_, req) {
-    return !req.url.indexOf(mc.prefix) ? false : host
+  return function (origHost, req) {
+    return !req.url.indexOf(mc.prefix) ? false : host || origHost
   }
 }
 
