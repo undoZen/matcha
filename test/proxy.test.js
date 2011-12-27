@@ -11,7 +11,7 @@ describe('proxy', function () {
     app1 = connect(connect.router(function (app) {
       app.r = function response (path, status, body) {
         this.all(path, function (req, res, next) {
-          res.writeHead(status);
+          res.writeHead(status, {'Content-Type': 'text/plain'});
           res.end(body);
         });
       };
@@ -21,12 +21,12 @@ describe('proxy', function () {
       app.r('/500', 500, '8001 500');
       app.all('/tamper', function (req, res, next) {
         if (req.headers['accept-encoding'] && ~req.headers['accept-encoding'].indexOf('gzip')) {
-          res.writeHead(200, {'Vary': 'Accept-Encoding', 'Content-Encoding': 'gzip'});
+          res.writeHead(200, {'Vary': 'Accept-Encoding', 'Content-Encoding': 'gzip', 'Content-Type': 'text/plain'});
           zlib.gzip(new Buffer('origin'), function(err, result) {
             res.end(result);
           });
         } else {
-          res.writeHead(200);
+          res.writeHead(200, {'Content-Type': 'text/plain'});
           res.end('origin');
         }
       });
@@ -54,7 +54,7 @@ describe('proxy', function () {
     before(function () {
       proxyApp.use(proxy.http({ host: '127.0.0.1', port: 8001, log: false }));
       proxyApp.use(proxy.http({ host: '127.0.0.1', port: 8002, log: false }));
-      proxyApp.use(proxy.http());
+      proxyApp.use(proxy.http({}));
       proxyApp.listen(8099);
     });
     it('proxy 200', function (done) {
